@@ -6,8 +6,9 @@ use eframe::{egui, epi};
 
 #[derive(EguiInspect)]
 struct MyApp {
+    #[inspect(multiline=false)]
     string: String,
-    #[inspect(multiline)]
+    #[inspect(multiline=true)]
     code: String,
     #[inspect(min = 12.0, max = 53.0)]
     unsigned32: u32,
@@ -15,17 +16,20 @@ struct MyApp {
     raw_string: &'static str,
     #[inspect(slider = false)]
     float32: f32,
+    #[inspect(slider = true, min = -43.0, max = 125.0)]
+    float64: f32,
 }
 
 impl Default for MyApp {
     fn default() -> Self {
         Self {
-            string: "Arthur".to_owned(),
-            code: "bonjour\nje\nsuis\nun\ntexte\nmultiline".to_owned(),
+            string: "I am a single line string".to_owned(),
+            code: "Hello\nI\nam\na\nmultiline\nstring".to_owned(),
             unsigned32: 42,
             boolean: false,
             raw_string: "YetAnotherString",
             float32: 12.0,
+            float64: 6.0
         }
     }
 }
