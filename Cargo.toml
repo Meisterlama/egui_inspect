@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "egui_example",
+    "egui_inspect",
+    "egui_inspect_derive"
+]
