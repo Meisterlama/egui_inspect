@@ -1,6 +1,6 @@
 [package]
 name = "egui_inspect_derive"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Derived traits for egui_inspect crate"
 license = "MIT"
