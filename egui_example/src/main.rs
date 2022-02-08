@@ -6,17 +6,19 @@ use eframe::{egui, epi};
 
 #[derive(EguiInspect)]
 struct MyApp {
-    #[inspect(multiline=false)]
+    #[inspect(no_edit)]
     string: String,
-    #[inspect(multiline=true)]
+    #[inspect(multiline)]
     code: String,
     #[inspect(min = 12.0, max = 53.0)]
     unsigned32: u32,
+    #[inspect(hide)]
+    _skipped: bool,
+    #[inspect(custom_func_mut = "custom_bool_inspect")]
     boolean: bool,
+    #[inspect(no_edit)]
     raw_string: &'static str,
-    #[inspect(slider = false)]
-    float32: f32,
-    #[inspect(slider = true, min = -43.0, max = 125.0)]
+    #[inspect(slider, min = -43.0, max = 125.0)]
     float64: f32,
 }
 
@@ -25,13 +27,18 @@ impl Default for MyApp {
         Self {
             string: "I am a single line string".to_owned(),
             code: "Hello\nI\nam\na\nmultiline\nstring".to_owned(),
+            _skipped: true,
             unsigned32: 42,
             boolean: false,
             raw_string: "YetAnotherString",
-            float32: 12.0,
-            float64: 6.0
+            float64: 6.0,
         }
     }
+}
+
+fn custom_bool_inspect(boolean: &mut bool, label: &'static str, ui: &mut egui::Ui) {
+    ui.label("C'EST LA GIGA FONCTION CUSTOM WÉ");
+    boolean.inspect(label, ui);
 }
 
 impl epi::App for MyApp {

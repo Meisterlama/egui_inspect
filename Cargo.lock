@@ -391,7 +391,7 @@ dependencies = [
 
 [[package]]
 name = "egui_inspect"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "egui",
  "egui_inspect_derive",
@@ -399,7 +399,7 @@ dependencies = [
 
 [[package]]
 name = "egui_inspect_derive"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "darling",
  "proc-macro2",

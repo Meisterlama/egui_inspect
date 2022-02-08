@@ -1,6 +1,6 @@
-use egui::{Color32, Ui};
-use crate::InspectString;
 use crate::InspectNumber;
+use crate::InspectString;
+use egui::{Color32, Ui};
 
 macro_rules! impl_inspect_float {
     ($($t:ty),+) => {
@@ -104,7 +104,7 @@ impl crate::EguiInspect for String {
     }
 }
 
-impl crate::InspectString for String{
+impl crate::InspectString for String {
     fn inspect_mut_multiline(&mut self, label: &'static str, ui: &mut Ui) {
         ui.horizontal(|ui| {
             ui.label(label.to_owned() + ":");

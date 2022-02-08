@@ -1,32 +1,52 @@
 use proc_macro2::{Ident, TokenStream};
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
-use syn::Type::{Path, Reference};
 use syn::{
-    parse_macro_input, parse_quote, Data, DeriveInput, Fields, FieldsNamed,
-    GenericParam, Generics, Type,
+    parse_macro_input, parse_quote, Data, DeriveInput, Field, Fields, FieldsNamed, GenericParam,
+    Generics,
 };
 
-use darling::FromField;
+use darling::{FromField, FromMeta};
+
+mod internal_paths;
+mod utils;
 
 #[derive(Debug, FromField)]
 #[darling(attributes(inspect), default)]
 struct AttributeArgs {
+    /// Ident automagically given by darling
+    #[allow(dead_code)]
     ident: Option<Ident>,
+    /// Doesn't generate code for the given field
+    hide: bool,
+    /// Doesn't call mut function for the given field (May be overridden by other params)
+    no_edit: bool,
+    /// Use slider function for numbers
     slider: bool,
+    /// Min value for numbers
     min: f32,
+    /// Max value for numbers
     max: f32,
+    /// Display mut text on multiple line
     multiline: bool,
+    /// Use custom function for non-mut inspect
+    custom_func: Option<String>,
+    /// Use custom function for mut inspect
+    custom_func_mut: Option<String>,
 }
 
 impl Default for AttributeArgs {
     fn default() -> Self {
         Self {
             ident: None,
+            hide: false,
+            no_edit: false,
             slider: true,
             min: 0.0,
             max: 100.0,
             multiline: false,
+            custom_func: None,
+            custom_func_mut: None,
         }
     }
 }
@@ -69,108 +89,65 @@ fn add_trait_bounds(mut generics: Generics) -> Generics {
     generics
 }
 
-fn inspect_struct(data: &Data, struct_name: &Ident, mutable: bool) -> TokenStream {
+fn inspect_struct(data: &Data, _struct_name: &Ident, mutable: bool) -> TokenStream {
     match *data {
         Data::Struct(ref data) => match data.fields {
             Fields::Named(ref fields) => handle_named_fields(fields, mutable),
             _ => {
-                quote! {}
+                unimplemented!("Unnamed fields are not yet supported")
             }
         },
-        Data::Enum(_) | Data::Union(_) => unimplemented!(),
-    }
-}
-
-fn path_is_internally_handled(path_str: &String) -> bool {
-    return path_str == "f32"
-        || path_str == "f64"
-        || path_str == "u8"
-        || path_str == "i8"
-        || path_str == "u16"
-        || path_str == "i16"
-        || path_str == "u32"
-        || path_str == "i32"
-        || path_str == "u64"
-        || path_str == "i64"
-        || path_str == "usize"
-        || path_str == "isize"
-        || path_str == "bool"
-        || path_str == "String"
-        || path_str == "str";
-}
-
-fn get_path_str(type_path: &Type) -> String {
-    match type_path {
-        Path(type_path) => type_path.path.get_ident().unwrap().to_string(),
-        Reference(type_ref) => get_path_str(&*type_ref.elem),
-        _ => "".to_string(),
+        Data::Enum(_) | Data::Union(_) => unimplemented!("Enums and Unions are not yet supported"),
     }
 }
 
 fn handle_named_fields(fields: &FieldsNamed, mutable: bool) -> TokenStream {
     let recurse = fields.named.iter().map(|f| {
-        let name = &f.ident;
-        let name_str = name.clone().unwrap().to_string();
-
         let attr = AttributeArgs::from_field(f).unwrap();
-        let slider = attr.slider;
-        let min = attr.min;
-        let max = attr.max;
-        let multiline = attr.multiline;
 
-        let path_str = get_path_str(&f.ty);
-
-        let func = if mutable { quote!(inspect_mut) } else { quote!(inspect) };
-        let ref_type = if mutable { quote!(&mut) } else { quote!(&) };
-        let default_function_call = quote_spanned! {f.span() => {egui_inspect::EguiInspect::#func(#ref_type self.#name, &#name_str, ui);}};
-
-        return if path_is_internally_handled(&path_str) {
-            match path_str.as_str() {
-                "f64" | "f32" | "u8" | "i8" |
-                "u16" | "i16" | "u32" | "i32" |
-                "u64" | "i64" => {
-                    if mutable {
-                        if slider {
-                            return quote_spanned! {f.span() => {
-                                egui_inspect::InspectNumber::inspect_with_slider(#ref_type self.#name, &#name_str, ui, #min, #max);
-                                    }
-                                };
-                        } else {
-                            return quote_spanned! {f.span() => {
-                                    egui_inspect::InspectNumber::inspect_with_drag_value(#ref_type self.#name, &#name_str, ui);
-                                    }
-                                };
-                        }
-                    } else {
-                        return default_function_call;
-                    }
-                },
-                "String" => {
-                    if mutable {
-                        if multiline {
-                            return quote_spanned! {f.span() => {
-                                egui_inspect::InspectString::inspect_mut_multiline(#ref_type self.#name, &#name_str, ui);
-                                    }
-                                }
-                        }
-                        else {
-                            return quote_spanned! {f.span() => {
-                                egui_inspect::InspectString::inspect_mut_singleline(#ref_type self.#name, &#name_str, ui);
-                                    }
-                                }
-                        }
-                    } else {
-                        return default_function_call
-                    }
-                }
-                _ => default_function_call,
-            }
-        } else {
-            default_function_call
+        if attr.hide {
+            return quote!();
         }
+
+        if let Some(ts) = handle_custom_func(&f, mutable, &attr) {
+            return ts;
+        }
+
+        if let Some(ts) = internal_paths::try_handle_internal_path(&f, mutable, &attr) {
+            return ts;
+        }
+
+        return utils::get_default_function_call(&f, mutable);
     });
     quote! {
         ui.strong(label);
         #(#recurse)*
     }
+}
+
+fn handle_custom_func(field: &Field, mutable: bool, attrs: &AttributeArgs) -> Option<TokenStream> {
+    let name = &field.ident;
+    let name_str = name.clone().unwrap().to_string();
+
+    if mutable && !attrs.no_edit && attrs.custom_func_mut.is_some() {
+        let custom_func_mut = attrs.custom_func_mut.as_ref().unwrap();
+        let ident = syn::Path::from_string(custom_func_mut)
+            .expect(format!("Could not find function: {}", custom_func_mut).as_str());
+        return Some(quote_spanned! { field.span() => {
+                #ident(&mut self.#name, &#name_str, ui);
+            }
+        });
+    }
+
+    if (!mutable || (mutable && attrs.no_edit)) && attrs.custom_func.is_some() {
+        let custom_func = attrs.custom_func.as_ref().unwrap();
+        let ident = syn::Path::from_string(custom_func)
+            .expect(format!("Could not find function: {}", custom_func).as_str());
+        return Some(quote_spanned! { field.span() => {
+                #ident(&self.#name, &#name_str, ui);
+            }
+        });
+    }
+
+    return None;
 }
