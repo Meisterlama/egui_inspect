@@ -1,5 +1,8 @@
 # egui_inspect
 
+![crates.io](https://img.shields.io/crates/v/egui_inspect.svg)
+![crates.io](https://img.shields.io/crates/l/egui_inspect.svg)
+
 This crate is intended to provide some rust helper macros to automatically generate boilerplate code to inspect
 structures
 
