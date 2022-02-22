@@ -89,13 +89,27 @@ fn add_trait_bounds(mut generics: Generics) -> Generics {
     generics
 }
 
-fn inspect_struct(data: &Data, _struct_name: &Ident, mutable: bool) -> TokenStream {
+fn inspect_struct(data: &Data, struct_name: &Ident, mutable: bool) -> TokenStream {
     match *data {
         Data::Struct(ref data) => match data.fields {
             Fields::Named(ref fields) => handle_named_fields(fields, mutable),
-            _ => {
-                unimplemented!("Unnamed fields are not yet supported")
+            Fields::Unnamed(ref fields) => {
+                let mut recurse = Vec::new();
+                    for (i,f) in fields.unnamed.iter().enumerate() {
+                    let name = format!("Field {}", i);
+                    let ref_str = if mutable { quote!(&mut) } else { quote!(&) };
+                    recurse.push(quote! { egui_inspect::EguiInspect::inspect(#ref_str self.#i, #name, ui);});
+                };
+
+
+                let struct_name_string = struct_name.to_string();
+                let result = quote! {
+                    ui.strong(label);
+                    #(#recurse)*
+                };
+                result
             }
+            _ => unimplemented!("Unit cannot be inspected !")
         },
         Data::Enum(_) | Data::Union(_) => unimplemented!("Enums and Unions are not yet supported"),
     }
@@ -103,11 +117,13 @@ fn inspect_struct(data: &Data, _struct_name: &Ident, mutable: bool) -> TokenStre
 
 fn handle_named_fields(fields: &FieldsNamed, mutable: bool) -> TokenStream {
     let recurse = fields.named.iter().map(|f| {
-        let attr = AttributeArgs::from_field(f).unwrap();
+        let attr = AttributeArgs::from_field(f).expect("Could not get attributes from field");
 
         if attr.hide {
             return quote!();
         }
+
+        let mutable = mutable && !attr.no_edit;
 
         if let Some(ts) = handle_custom_func(&f, mutable, &attr) {
             return ts;

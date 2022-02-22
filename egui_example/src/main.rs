@@ -14,8 +14,8 @@ struct MyApp {
     unsigned32: u32,
     #[inspect(hide)]
     _skipped: bool,
-    #[inspect(custom_func_mut = "custom_bool_inspect")]
-    boolean: bool,
+    #[inspect(no_edit)]
+    strings: Vec<String>,
     #[inspect(no_edit)]
     raw_string: &'static str,
     #[inspect(slider, min = -43.0, max = 125.0)]
@@ -29,12 +29,17 @@ impl Default for MyApp {
             code: "Hello\nI\nam\na\nmultiline\nstring".to_owned(),
             _skipped: true,
             unsigned32: 42,
-            boolean: false,
+            strings: vec!{"Bonjour".to_string(),
+                          "Voici une liste de string".to_string(),
+                          "Avec plusieurs strings".to_string()},
             raw_string: "YetAnotherString",
             float64: 6.0,
         }
     }
 }
+
+#[derive(EguiInspect)]
+struct Salut(i32, f32);
 
 fn custom_bool_inspect(boolean: &mut bool, label: &'static str, ui: &mut egui::Ui) {
     ui.label("C'EST LA GIGA FONCTION CUSTOM WÉ");
@@ -46,6 +51,9 @@ impl epi::App for MyApp {
         egui::CentralPanel::default().show(ctx, |ui| {
             self.inspect_mut("Test App", ui);
             // self.inspect("Test App", ui);
+
+            let salut = Salut(1, 2.0);
+            salut.inspect("yoyoyo", ui);
         });
 
         // Resize the native window to be just the size we need it to be:

@@ -4,15 +4,19 @@ use syn::spanned::Spanned;
 use syn::Type::{Path, Reference};
 use syn::{Field, Type};
 
-pub fn get_path_str(type_path: &Type) -> String {
+pub fn get_path_str(type_path: &Type) -> Option<String> {
     match type_path {
-        Path(type_path) => type_path
-            .path
-            .get_ident()
-            .expect("Cannot find identifier")
-            .to_string(),
+        Path(type_path) => {
+            let ident = type_path
+                .path
+                .get_ident();
+            if let Some(name) = ident {
+                return Some(name.to_string());
+            }
+            return None;
+        }
         Reference(type_ref) => get_path_str(&*type_ref.elem),
-        _ => "".to_string(),
+        _ => Some("".to_string()),
     }
 }
 

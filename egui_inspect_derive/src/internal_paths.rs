@@ -30,7 +30,12 @@ pub(crate) fn try_handle_internal_path(
 ) -> Option<TokenStream> {
     let path_str = get_path_str(&field.ty);
 
-    if !path_is_internally_handled(&get_path_str(&field.ty)) {
+    if path_str.is_none() {
+        return None;
+    }
+    let path_str = path_str.unwrap();
+
+    if !path_is_internally_handled(&path_str) {
         return None;
     }
 
