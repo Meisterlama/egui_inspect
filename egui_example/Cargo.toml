@@ -9,5 +9,5 @@ publish = false
 
 [dependencies]
 egui_inspect = { path = "../egui_inspect" }
-eframe = "0.16"
-egui = "0.16"
+eframe = "0.20"
+egui = "0.20"

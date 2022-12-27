@@ -2,7 +2,7 @@
 
 use egui_inspect::EguiInspect;
 
-use eframe::{egui, epi};
+use eframe::egui;
 
 #[derive(EguiInspect)]
 struct MyApp {
@@ -46,8 +46,8 @@ fn custom_bool_inspect(boolean: &mut bool, label: &'static str, ui: &mut egui::U
     boolean.inspect(label, ui);
 }
 
-impl epi::App for MyApp {
-    fn update(&mut self, ctx: &egui::CtxRef, frame: &epi::Frame) {
+impl eframe::App for MyApp {
+    fn update(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             self.inspect_mut("Test App", ui);
             // self.inspect("Test App", ui);
@@ -59,13 +59,9 @@ impl epi::App for MyApp {
         // Resize the native window to be just the size we need it to be:
         frame.set_window_size(ctx.used_size());
     }
-
-    fn name(&self) -> &str {
-        "My egui App"
-    }
 }
 
 fn main() {
     let options = eframe::NativeOptions::default();
-    eframe::run_native(Box::new(MyApp::default()), options);
+    eframe::run_native("My egui App", options, Box::new(|_cc| Box::new(MyApp::default())));
 }
