@@ -15,8 +15,7 @@ mod utils;
 #[darling(attributes(inspect), default)]
 struct AttributeArgs {
     /// Ident automagically given by darling
-    #[allow(dead_code)]
-    ident: Option<Ident>,
+    name: Option<String>,
     /// Doesn't generate code for the given field
     hide: bool,
     /// Doesn't call mut function for the given field (May be overridden by other params)
@@ -38,7 +37,7 @@ struct AttributeArgs {
 impl Default for AttributeArgs {
     fn default() -> Self {
         Self {
-            ident: None,
+            name: None,
             hide: false,
             no_edit: false,
             slider: true,

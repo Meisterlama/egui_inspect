@@ -50,7 +50,11 @@ pub(crate) fn try_handle_internal_path(
 
 fn handle_number_path(field: &Field, mutable: bool, attrs: &AttributeArgs) -> Option<TokenStream> {
     let name = &field.ident;
-    let name_str = name.clone().unwrap().to_string();
+
+    let name_str = match &attrs.name {
+        Some(n) => n.clone(),
+        None => name.clone().unwrap().to_string(),
+    };
 
     let no_edit = attrs.no_edit;
     let slider = attrs.slider;
@@ -79,7 +83,11 @@ fn handle_number_path(field: &Field, mutable: bool, attrs: &AttributeArgs) -> Op
 
 fn handle_string_path(field: &Field, mutable: bool, attrs: &AttributeArgs) -> Option<TokenStream> {
     let name = &field.ident;
-    let name_str = name.clone().unwrap().to_string();
+
+    let name_str = match &attrs.name {
+        Some(n) => n.clone(),
+        None => name.clone().unwrap().to_string(),
+    };
 
     let multiline = attrs.multiline;
     let no_edit = attrs.no_edit;
