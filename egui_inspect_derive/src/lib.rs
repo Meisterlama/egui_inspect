@@ -132,7 +132,7 @@ fn handle_named_fields(fields: &FieldsNamed, mutable: bool) -> TokenStream {
             return ts;
         }
 
-        return utils::get_default_function_call(&f, mutable);
+        return utils::get_default_function_call(&f, mutable, &attr);
     });
     quote! {
         ui.strong(label);
@@ -142,7 +142,11 @@ fn handle_named_fields(fields: &FieldsNamed, mutable: bool) -> TokenStream {
 
 fn handle_custom_func(field: &Field, mutable: bool, attrs: &AttributeArgs) -> Option<TokenStream> {
     let name = &field.ident;
-    let name_str = name.clone().unwrap().to_string();
+
+    let name_str = match &attrs.name {
+        Some(n) => n.clone(),
+        None => name.clone().unwrap().to_string(),
+    };
 
     if mutable && !attrs.no_edit && attrs.custom_func_mut.is_some() {
         let custom_func_mut = attrs.custom_func_mut.as_ref().unwrap();
