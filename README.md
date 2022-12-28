@@ -21,8 +21,7 @@ This is a side project, at a very early state, so the API might not be stable ye
 
 ![img.png](resources/screenshot.png)
 
-You can inspect struct mutably and non-mutably. There is some customization per fields. There is no possibilities to
-override field's name yet
+You can inspect struct mutably and non-mutably. There is some customization per fields. 
 
 To implement this example, you just need to add egui_inspect as dependency to your project, and then, when drawing you
 ui with egui, you need to give your `&Ui` to the inspect function, no need for additional input .

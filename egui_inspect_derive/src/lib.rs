@@ -14,7 +14,7 @@ mod utils;
 #[derive(Debug, FromField)]
 #[darling(attributes(inspect), default)]
 struct AttributeArgs {
-    /// Ident automagically given by darling
+    /// Name of the field to be displayed on UI labels
     name: Option<String>,
     /// Doesn't generate code for the given field
     hide: bool,
