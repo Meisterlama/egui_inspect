@@ -66,10 +66,10 @@ pub fn derive_egui_inspect(input: proc_macro::TokenStream) -> proc_macro::TokenS
 
     let expanded = quote! {
         impl #impl_generics egui_inspect::EguiInspect for #name #ty_generics #where_clause {
-            fn inspect(&self, label: &'static str, ui: &mut egui::Ui) {
+            fn inspect(&self, label: &str, ui: &mut egui::Ui) {
                 #inspect
             }
-            fn inspect_mut(&mut self, label: &'static str, ui: &mut egui::Ui) {
+            fn inspect_mut(&mut self, label: &str, ui: &mut egui::Ui) {
                 #inspect_mut
             }
         }
