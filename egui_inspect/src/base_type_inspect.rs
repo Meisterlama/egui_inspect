@@ -133,7 +133,7 @@ impl crate::EguiInspect for bool {
 impl<T: crate::EguiInspect, const N: usize> crate::EguiInspect for [T; N] {
     fn inspect(&self, label: &'static str, ui: &mut Ui) {
         egui::CollapsingHeader::new(label.to_string().add(format!("[{}]", N).as_str())).show(ui, |ui| {
-            for (i, item) in self.iter().enumerate() {
+            for item in self.iter() {
                 item.inspect("item", ui);
             }
         });
@@ -141,7 +141,7 @@ impl<T: crate::EguiInspect, const N: usize> crate::EguiInspect for [T; N] {
 
     fn inspect_mut(&mut self, label: &'static str, ui: &mut Ui) {
         egui::CollapsingHeader::new(label.to_string().add(format!("[{}]", N).as_str())).show(ui, |ui| {
-            for (i, item) in self.iter_mut().enumerate() {
+            for item in self.iter_mut() {
                 item.inspect_mut("item", ui);
             }
         });
@@ -151,7 +151,7 @@ impl<T: crate::EguiInspect, const N: usize> crate::EguiInspect for [T; N] {
 impl<T: crate::EguiInspect + Default> crate::EguiInspect for Vec<T> {
     fn inspect(&self, label: &'static str, ui: &mut Ui) {
         egui::CollapsingHeader::new(label.to_string().add(format!("[{}]", self.len()).as_str())).show(ui, |ui| {
-            for (i, item) in self.iter().enumerate() {
+            for item in self.iter() {
                 item.inspect("item", ui);
             }
         });
@@ -161,7 +161,7 @@ impl<T: crate::EguiInspect + Default> crate::EguiInspect for Vec<T> {
         ui.horizontal_top(|ui| {
             egui::CollapsingHeader::new(label.to_string().add(format!("[{}]", self.len()).as_str()))
                 .id_source(label).show(ui, |ui| {
-                for (i, item) in self.iter_mut().enumerate() {
+                for item in self.iter_mut() {
                     item.inspect_mut("item", ui);
                 }
             });

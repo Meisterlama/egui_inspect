@@ -89,20 +89,18 @@ fn add_trait_bounds(mut generics: Generics) -> Generics {
     generics
 }
 
-fn inspect_struct(data: &Data, struct_name: &Ident, mutable: bool) -> TokenStream {
+fn inspect_struct(data: &Data, _struct_name: &Ident, mutable: bool) -> TokenStream {
     match *data {
         Data::Struct(ref data) => match data.fields {
             Fields::Named(ref fields) => handle_named_fields(fields, mutable),
             Fields::Unnamed(ref fields) => {
                 let mut recurse = Vec::new();
-                    for (i,f) in fields.unnamed.iter().enumerate() {
+                for (i,_) in fields.unnamed.iter().enumerate() {
                     let name = format!("Field {}", i);
                     let ref_str = if mutable { quote!(&mut) } else { quote!(&) };
                     recurse.push(quote! { egui_inspect::EguiInspect::inspect(#ref_str self.#i, #name, ui);});
                 };
 
-
-                let struct_name_string = struct_name.to_string();
                 let result = quote! {
                     ui.strong(label);
                     #(#recurse)*
