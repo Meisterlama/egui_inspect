@@ -14,9 +14,8 @@ mod utils;
 #[derive(Debug, FromField)]
 #[darling(attributes(inspect), default)]
 struct AttributeArgs {
-    /// Ident automagically given by darling
-    #[allow(dead_code)]
-    ident: Option<Ident>,
+    /// Name of the field to be displayed on UI labels
+    name: Option<String>,
     /// Doesn't generate code for the given field
     hide: bool,
     /// Doesn't call mut function for the given field (May be overridden by other params)
@@ -38,7 +37,7 @@ struct AttributeArgs {
 impl Default for AttributeArgs {
     fn default() -> Self {
         Self {
-            ident: None,
+            name: None,
             hide: false,
             no_edit: false,
             slider: true,
@@ -132,7 +131,7 @@ fn handle_named_fields(fields: &FieldsNamed, mutable: bool) -> TokenStream {
             return ts;
         }
 
-        return utils::get_default_function_call(&f, mutable);
+        return utils::get_default_function_call(&f, mutable, &attr);
     });
     quote! {
         ui.strong(label);
@@ -142,7 +141,11 @@ fn handle_named_fields(fields: &FieldsNamed, mutable: bool) -> TokenStream {
 
 fn handle_custom_func(field: &Field, mutable: bool, attrs: &AttributeArgs) -> Option<TokenStream> {
     let name = &field.ident;
-    let name_str = name.clone().unwrap().to_string();
+
+    let name_str = match &attrs.name {
+        Some(n) => n.clone(),
+        None => name.clone().unwrap().to_string(),
+    };
 
     if mutable && !attrs.no_edit && attrs.custom_func_mut.is_some() {
         let custom_func_mut = attrs.custom_func_mut.as_ref().unwrap();

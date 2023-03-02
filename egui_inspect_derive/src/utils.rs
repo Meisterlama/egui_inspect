@@ -4,6 +4,8 @@ use syn::spanned::Spanned;
 use syn::Type::{Path, Reference};
 use syn::{Field, Type};
 
+use crate::AttributeArgs;
+
 pub fn get_path_str(type_path: &Type) -> Option<String> {
     match type_path {
         Path(type_path) => {
@@ -20,9 +22,13 @@ pub fn get_path_str(type_path: &Type) -> Option<String> {
     }
 }
 
-pub(crate) fn get_default_function_call(field: &Field, mutable: bool) -> TokenStream {
+pub(crate) fn get_default_function_call(field: &Field, mutable: bool, attrs: &AttributeArgs) -> TokenStream {
     let name = &field.ident;
-    let name_str = name.clone().unwrap().to_string();
+
+    let name_str = match &attrs.name {
+        Some(n) => n.clone(),
+        None => name.clone().unwrap().to_string(),
+    };
 
     return if mutable {
         quote_spanned! {field.span() => {egui_inspect::EguiInspect::inspect_mut(&mut self.#name, &#name_str, ui);}}

@@ -19,7 +19,13 @@ struct MyApp {
     #[inspect(no_edit)]
     raw_string: &'static str,
     #[inspect(slider, min = -43.0, max = 125.0)]
-    float64: f32,
+    float64: f64,
+    #[inspect(name = "A proper field name")]
+    ugly_internal_field_name: u16,
+    #[inspect(name = "A tuple struct")]
+    ugly_internal_field_name_2: Salut,
+    #[inspect(name = "A struct with three floats")]
+    vector_struct: Vector,
 }
 
 impl Default for MyApp {
@@ -34,12 +40,26 @@ impl Default for MyApp {
                           "Avec plusieurs strings".to_string()},
             raw_string: "YetAnotherString",
             float64: 6.0,
+            ugly_internal_field_name: 16,
+            ugly_internal_field_name_2: Salut(50, 123.45),
+            vector_struct: Vector { x: 10.0, y: 20.0, z: 30.0 },
         }
     }
 }
 
 #[derive(EguiInspect)]
 struct Salut(i32, f32);
+
+#[derive(EguiInspect)]
+struct Vector { 
+    #[inspect(name = "X axis")]
+    x: f32, 
+    #[inspect(name = "Y axis")]
+    y: f32, 
+    #[inspect(name = "Z axis")]
+    z: f32 
+}
+
 
 fn custom_bool_inspect(boolean: &mut bool, label: &'static str, ui: &mut egui::Ui) {
     ui.label("C'EST LA GIGA FONCTION CUSTOM WÉ");
@@ -53,7 +73,7 @@ impl eframe::App for MyApp {
             // self.inspect("Test App", ui);
 
             let salut = Salut(1, 2.0);
-            salut.inspect("yoyoyo", ui);
+            salut.inspect("label for tuple struct", ui);
         });
 
         // Resize the native window to be just the size we need it to be:

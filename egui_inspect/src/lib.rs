@@ -21,6 +21,8 @@
 //!     raw_string: &'static str,
 //!     #[inspect(slider, min = -43.0, max = 125.0)]
 //!     float64: f32,
+//!     #[inspect(name = "A proper field name")]
+//!     ugly_internal_field_name: u16,
 //! }
 //!
 //! fn custom_bool_inspect(boolean: &mut bool, label: &'static str, ui: &mut egui::Ui) {
@@ -40,14 +42,15 @@
 //! Here is a list of supported attributes.
 //! It might not be up to date, it's better to check directly AttributeArgs declaration
 //!
+//! - `name` *(String)*: Use custom label for the given field instead of the internal field name
 //! - `hide` *(bool)*: If true, doesn't generate code for the given field
 //! - `no_edit` *(bool)*: If true, never call mut function for the given field (May be overridden by other params)
 //! - `slider` *(bool)*: If true, use a slider when inspecting numbers (`mut` only)
 //! - `min` *(f32)*: Min value for inspecting numbers (`mut` only)
 //! - `max` *(f32)*: Max value for inspecting numbers (`mut` only)
 //! - `multiline` *(bool)*: If true, display the text on multiple lines (`mut` only)
-//! - `custom_func` *(string)*: Use custom function for non-mut inspect (Evaluate the string as a function path)
-//! - `custom_func_mut` *(string)*: Use custom function for mut inspect (Evaluate the string as a function path)
+//! - `custom_func` *(String)*: Use custom function for non-mut inspect (Evaluate the string as a function path)
+//! - `custom_func_mut` *(String)*: Use custom function for mut inspect (Evaluate the string as a function path)
 //!
 
 /// See also [EguiInspect]
