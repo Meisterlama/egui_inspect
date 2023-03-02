@@ -3,7 +3,7 @@ use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
 use syn::{
     parse_macro_input, parse_quote, Data, DeriveInput, Field, Fields, FieldsNamed, GenericParam,
-    Generics,
+    Generics, Index,
 };
 
 use darling::{FromField, FromMeta};
@@ -89,20 +89,19 @@ fn add_trait_bounds(mut generics: Generics) -> Generics {
     generics
 }
 
-fn inspect_struct(data: &Data, struct_name: &Ident, mutable: bool) -> TokenStream {
+fn inspect_struct(data: &Data, _struct_name: &Ident, mutable: bool) -> TokenStream {
     match *data {
         Data::Struct(ref data) => match data.fields {
             Fields::Named(ref fields) => handle_named_fields(fields, mutable),
             Fields::Unnamed(ref fields) => {
                 let mut recurse = Vec::new();
-                    for (i,f) in fields.unnamed.iter().enumerate() {
-                    let name = format!("Field {}", i);
+                for (i,_) in fields.unnamed.iter().enumerate() {
+                    let tuple_index = Index::from(i);
+                    let name = format!("Field {i}");
                     let ref_str = if mutable { quote!(&mut) } else { quote!(&) };
-                    recurse.push(quote! { egui_inspect::EguiInspect::inspect(#ref_str self.#i, #name, ui);});
+                    recurse.push(quote! { egui_inspect::EguiInspect::inspect(#ref_str self.#tuple_index, #name, ui);});
                 };
 
-
-                let struct_name_string = struct_name.to_string();
                 let result = quote! {
                     ui.strong(label);
                     #(#recurse)*
