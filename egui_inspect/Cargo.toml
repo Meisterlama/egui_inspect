@@ -13,4 +13,4 @@ categories = [ "gui", "game-development"]
 
 [dependencies]
 egui_inspect_derive = { path = "../egui_inspect_derive", version = "0.1" }
-egui = "0.20"
+egui = "0.21"
